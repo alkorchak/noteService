@@ -5,10 +5,12 @@ import data.Note
 import exceptions.*
 
 object NoteService {
+    private var counter = 0
     private val notes = mutableListOf<Note>()
     private val comments = mutableListOf<Comment>()
+
     fun add(title: String, text: String): Int {
-        val newNote = Note(notes.lastIndex + 2, title, text, false)
+        val newNote = Note(counter++, title, text)
         notes.add(newNote)
         return newNote.nid
     }
@@ -16,36 +18,36 @@ object NoteService {
     fun get(): List<Note> {
         val notesPresent = mutableListOf<Note>()
         val notesIterator = notes.iterator()
-        for (item in notesIterator) {
-            if (item.deleted != true) {
-                notesPresent.add(item)
-            }
+        while (notesIterator.hasNext()) {
+            notesPresent.add(notesIterator.next())
         }
-        return notesPresent
+        if (notesPresent.isEmpty()) {
+            throw NoNotesFound("Заметок нет!")
+            } else return notesPresent
     }
 
     fun edit(noteId: Int, title: String, text: String): Boolean {
         val note = getByID(noteId)
-        notes[noteId - 1] = note.copy(title = title, text = text)
+        val index = notes.indexOf(note)
+        notes[index] = note.copy(title = title, text = text)
         return true
     }
 
     fun delete(noteId: Int): Boolean {
         val note = getByID(noteId)
-        notes[noteId - 1] = note.copy(deleted = true)
-        return true
+        return notes.remove(note)
+        //notes.removeIf { it.nid == noteId }
+        //comments.removeIf { it.ownerId == noteId }
+
     }
 
     fun getByID(noteId: Int): Note {
-
         try {
-            val note = notes[noteId - 1]
-            if (note.deleted == true) {
-                throw NoteDeletedException("Заметка была удалена")
-            } else return note
-        } catch (e: IndexOutOfBoundsException) {
+            return notes.single { it.nid == noteId }
+        } catch (e: NoSuchElementException) {
             throw NoteNotFoundException("Заметка не найдена")
         }
+
     }
 
     fun createComment(noteId: Int, message: String): Int {
@@ -109,5 +111,9 @@ object NoteService {
     fun clear() {
         notes.clear()
         comments.clear()
+    }
+
+    fun reset() {
+        counter = 0
     }
 }
