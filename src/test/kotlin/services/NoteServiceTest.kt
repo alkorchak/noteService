@@ -4,11 +4,17 @@ import exceptions.*
 import org.junit.After
 import org.junit.Test
 import org.junit.Assert.*
-import kotlin.math.exp
+import org.junit.Before
 
 class NoteServiceTest {
 
     val noteserv = NoteService
+
+    @Before
+    fun reset(){
+        noteserv.reset()
+    }
+
 
     @After
     fun clear() {
@@ -20,13 +26,13 @@ class NoteServiceTest {
     fun add() {
 
         val result = noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        assertEquals(1,result)
+        assertEquals(0,result)
     }
 
     @Test
     fun getOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        val note = Note(1,"Заголовок заметки 1" , "текст заметки 1", false)
+        val note = Note(0,"Заголовок заметки 1" , "текст заметки 1")
         val expected = mutableListOf(note)
         val result = noteserv.get()
         assertEquals(expected,result)
@@ -35,46 +41,46 @@ class NoteServiceTest {
     @Test
     fun editOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        val expected = noteserv.edit(1, "Title changed 1" , "text changed 1")
+        val expected = noteserv.edit(0, "Title changed 1" , "text changed 1")
         assertTrue(expected)
     }
 
     @Test
     fun deleteOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        val expected = noteserv.delete(1)
+        val expected = noteserv.delete(0)
         assertTrue(expected)
     }
 
     @Test
     fun getByIDOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        val result = noteserv.getByID(1)
-        val expected = Note(1,"Заголовок заметки 1" , "текст заметки 1", false)
+        val result = noteserv.getByID(0)
+        val expected = Note(0,"Заголовок заметки 1" , "текст заметки 1")
         assertEquals(expected,result)
     }
 
     @Test
     fun createCommentOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        val result = noteserv.createComment(1,"comment")
+        val result = noteserv.createComment(0,"comment")
         assertEquals(1,result)
     }
 
     @Test
     fun getCommentsOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
-        val comment = Comment(1,1, "первый комментарий к заметке 1", false)
+        noteserv.createComment(0, "первый комментарий к заметке 1")
+        val comment = Comment(1,0, "первый комментарий к заметке 1", false)
         val expected = mutableListOf(comment)
-        val result = noteserv.getComments(1)
+        val result = noteserv.getComments(0)
         assertEquals(expected,result)
     }
 
     @Test
     fun editCommentOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         val expected = noteserv.editComment(1,"edited comment")
         assertTrue(expected)
     }
@@ -82,7 +88,7 @@ class NoteServiceTest {
     @Test
     fun deleteCommentOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         val expected = noteserv.deleteComment(1)
         assertTrue(expected)
     }
@@ -90,7 +96,7 @@ class NoteServiceTest {
     @Test
     fun restoreCommentOk() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         noteserv.deleteComment(1)
         val expected = noteserv.restoreComment(1)
         assertTrue(expected)
@@ -103,7 +109,7 @@ class NoteServiceTest {
         }
 
 
-    @Test(expected = NoteDeletedException::class)
+    @Test(expected = NoteNotFoundException::class)
         fun getByIDTest2() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
         noteserv.delete(1)
@@ -113,7 +119,7 @@ class NoteServiceTest {
     @Test(expected = CommentNotFoundException::class)
         fun getCommentByID1() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         noteserv.deleteComment(2)
 
         }
@@ -122,7 +128,7 @@ class NoteServiceTest {
     @Test(expected = CommentDeletedException::class)
          fun getCommentByID2() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         noteserv.deleteComment(1)
         noteserv.deleteComment(1)
         }
@@ -130,7 +136,7 @@ class NoteServiceTest {
     @Test(expected = CommentNotDeletedException::class)
         fun restoreDeletedException() {
         noteserv.add("Заголовок заметки 1" , "текст заметки 1")
-        noteserv.createComment(1, "первый комментарий к заметке 1")
+        noteserv.createComment(0, "первый комментарий к заметке 1")
         noteserv.restoreComment(1)
         }
 
